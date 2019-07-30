@@ -1,0 +1,4 @@
+export OECrypto_DIR="/usr/local/lib/OECrypto/cmake"
+export OEOpenSSL_INCLUDE_DIR="/opt/oe-openssl/include"
+export OEOpenSSL_LIB_DIR="/opt/oe-openssl/lib"
+export OpenEnclave_DIR="/opt/openenclave/lib/openenclave/cmake"

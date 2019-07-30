@@ -1,0 +1,176 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#include <assert.h>
+#include <fcntl.h>
+#include <oecrypto/corelibc/string.h>
+#include <openenclave/enclave.h>
+#include <oecrypto/internal/cert.h>
+#include <oecrypto/internal/crypto/sha.h>
+#include <oecrypto/internal/ec.h>
+#include <oecrypto/internal/hexdump.h>
+#include <oecrypto/internal/malloc.h>
+#include <oecrypto/internal/raise.h>
+#include <oecrypto/internal/rsa.h>
+#include <oecrypto/internal/syscall.h>
+#include <oecrypto/internal/tests.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/syscall.h>
+#include <sys/uio.h>
+#include <unistd.h>
+#include "../../tests.h"
+#include "crypto_t.h"
+
+char* oe_host_strdup(const char* str)
+{
+    size_t n = oe_strlen(str);
+    char* dup = (char*)oe_host_malloc(n + 1);
+
+    if (dup)
+    {
+        memcpy(dup, str, n + 1);
+    }
+
+    return dup;
+}
+
+static oe_result_t _syscall_hook(
+    long number,
+    long arg1,
+    long arg2,
+    long arg3,
+    long arg4,
+    long arg5,
+    long arg6,
+    long* ret)
+{
+    oe_result_t result = OE_UNSUPPORTED;
+
+    OE_UNUSED(arg4);
+    OE_UNUSED(arg5);
+    OE_UNUSED(arg6);
+
+    if (ret)
+    {
+        *ret = -1;
+    }
+
+    if (!ret)
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    switch (number)
+    {
+        case SYS_open:
+        {
+            const int flags = (const int)arg2;
+            if (flags == O_RDONLY)
+            {
+                int rval = -1;
+                OE_TEST(
+                    OE_OK == f_open(&rval, (char*)arg1, (int)arg2, (int)arg3));
+                *ret = (long)rval;
+                result = OE_OK;
+            }
+            break;
+        }
+        case SYS_read:
+        {
+            int rval = -1;
+            OE_TEST(
+                OE_OK == f_read(&rval, (int)arg1, (char*)arg2, (size_t)arg3));
+            *ret = (long)rval;
+            result = OE_OK;
+            break;
+        }
+        case SYS_readv:
+        {
+            /* Handle SYS_readv because fread invokes readv internally
+             * To avoid dealing with linux-specific readv semantics on Windows,
+             * marshal this as a synchronous C read() invocation.
+             */
+
+            struct iovec* iov = (struct iovec*)arg2;
+
+            // determine the total buffer size
+            size_t buf_size = sizeof(struct iovec) * (size_t)arg3;
+            size_t data_size = 0;
+            for (size_t i = 0; i < (size_t)arg3; ++i)
+            {
+                data_size += iov[i].iov_len;
+            }
+            buf_size += data_size;
+
+            // create the local buffer
+            struct iovec* iov_host = (struct iovec*)malloc(buf_size);
+            char* data_pos =
+                (char*)iov_host + sizeof(struct iovec) * (size_t)arg3;
+
+            // initialize the buffers
+            char* buf_pos = data_pos;
+            for (size_t i = 0; i < (size_t)arg3; ++i)
+            {
+                iov_host[i].iov_base = buf_pos;
+                iov_host[i].iov_len = iov[i].iov_len;
+                buf_pos += iov[i].iov_len;
+            }
+
+            // make the host call
+            int rval = -1;
+            OE_TEST(OE_OK == f_read(&rval, (int)arg1, data_pos, data_size));
+            *ret = (long)rval;
+
+            if (rval > 0)
+            {
+                // copy the data returned from the host
+                for (size_t i = 0; i < (size_t)arg3; ++i)
+                {
+                    memcpy(
+                        iov[i].iov_base, iov_host[i].iov_base, iov[i].iov_len);
+                }
+            }
+
+            // release the local buffer
+            free(iov_host);
+
+            result = OE_OK;
+            break;
+        }
+        case SYS_close:
+        {
+            int rval = -1;
+            OE_TEST(OE_OK == f_close(&rval, (int)arg1));
+            *ret = (long)rval;
+            result = OE_OK;
+            break;
+        }
+        default:
+        {
+            /* Avoid OE_RAISE here to reduce error log volume since the
+             * syscall handler allows falling back to defaults */
+            OE_TRACE_VERBOSE("Unsupported _syscall_hook number:%#x\n", number);
+            break;
+        }
+    }
+
+done:
+    return result;
+}
+
+void test()
+{
+    oe_register_syscall_hook(_syscall_hook);
+    TestAll();
+}
+
+OE_SET_ENCLAVE_SGX(
+    1,    /* ProductID */
+    1,    /* SecurityVersion */
+    true, /* AllowDebug */
+    1024, /* HeapPageCount */
+    1024, /* StackPageCount */
+    2);   /* TCSCount */
