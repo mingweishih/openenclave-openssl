@@ -6,6 +6,7 @@
 
 #include <oecrypto/corelibc/stdarg.h>
 #include <oecrypto/internal/defs.h>
+#include <oecrypto/internal/types.h>
 
 OE_EXTERNC_BEGIN
 
