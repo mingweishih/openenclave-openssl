@@ -1,18 +1,17 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "../../common/asn1.h"
-
 #include <openssl/asn1.h>
 #include <openssl/pem.h>
 
 #include <openenclave/bits/safecrt.h>
-#include <oecrypto/internal/crypto/asn1.h>
+#include <oecrypto/internal/asn1.h>
 #include <oecrypto/internal/defs.h>
 #include <oecrypto/internal/raise.h>
 #include <oecrypto/internal/utils.h>
 
 #include <string.h>
+#include "../common/asn1.h"
 
 OE_STATIC_ASSERT(V_ASN1_CONSTRUCTED == OE_ASN1_TAG_CONSTRUCTED);
 OE_STATIC_ASSERT(V_ASN1_SEQUENCE == OE_ASN1_TAG_SEQUENCE);
@@ -136,11 +135,11 @@ oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid)
 
         /* Convert OID to an ASN1 object */
         if (!(obj = d2i_ASN1_OBJECT(&obj, &ptr, (long)oe_asn1_remaining(asn1))))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Convert OID to string format */
         if (!OBJ_obj2txt(oid->buf, sizeof(oe_oid_string_t), obj, 1))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         asn1->ptr = ptr;
     }

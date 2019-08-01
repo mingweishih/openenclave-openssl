@@ -7,7 +7,7 @@ elseif (WIN32)
     set(OE_ASM ASM_MASM)
 endif ()
 
-project(OECrypto)
+project(OECrypto LANGUAGES C CXX ${OE_ASM})
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 

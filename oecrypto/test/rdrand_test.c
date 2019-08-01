@@ -2,9 +2,11 @@
 // Licensed under the MIT License.
 
 #define MAX_LOOP_SIZE 100000000
+
 #include <openenclave/enclave.h>
 #include <oecrypto/internal/rdrand.h>
 #include <oecrypto/internal/tests.h>
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

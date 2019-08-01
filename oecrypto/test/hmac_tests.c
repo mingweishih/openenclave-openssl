@@ -7,6 +7,7 @@
 
 #include <oecrypto/internal/crypto/hmac.h>
 #include <oecrypto/internal/tests.h>
+
 #include <stdio.h>
 #include <string.h>
 #include "hash.h"

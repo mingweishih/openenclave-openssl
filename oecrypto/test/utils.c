@@ -6,6 +6,7 @@
 #endif
 
 #include <oecrypto/internal/tests.h>
+
 #include <stdint.h>
 #include <string.h>
 
