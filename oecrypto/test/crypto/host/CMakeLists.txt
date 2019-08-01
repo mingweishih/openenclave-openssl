@@ -5,7 +5,7 @@
 if (UNIX)
 add_executable(hostcrypto
     main.c
-    ../../common/sgx/rand.S
+    ../../../common/sgx/rand.S
     ../read_file.c
     ../asn1_tests.c
     ../crl_tests.c
