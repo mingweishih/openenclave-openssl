@@ -22,6 +22,6 @@ add_executable(hostcrypto
 
 add_dependencies(hostcrypto crypto_test_data)
 target_link_libraries(hostcrypto oecrypto_includes openenclave::oehost)
-add_test(test/host hostcrypto)
+add_test(test/crypto/host hostcrypto)
 
 endif()

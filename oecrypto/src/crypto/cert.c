@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openssl/asn1.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
@@ -1001,141 +1002,272 @@ done:
     return result;
 }
 
-// TODO: reimplement
-//oe_result_t oe_gen_custom_x509_cert(
-//    oe_cert_config_t* config,
-//    unsigned char* cert_buf,
-//    size_t cert_buf_size,
-//    size_t* bytes_written)
-//{
-//    oe_result_t result = OE_CRYPTO_ERROR;
-//    mbedtls_mpi serial;
-//    mbedtls_x509write_cert x509cert = {0};
-//    mbedtls_pk_context subject_key;
-//    mbedtls_pk_context issuer_key;
-//    mbedtls_ctr_drbg_context* ctr_drbg = NULL;
-//    mbedtls_entropy_context entropy;
-//    unsigned char* buff = NULL;
-//    int ret = 0;
-//
-//    mbedtls_pk_init(&subject_key);
-//    mbedtls_pk_init(&issuer_key);
-//    mbedtls_mpi_init(&serial);
-//    // mbedtls_ctr_drbg_init(&ctr_drbg);
-//    mbedtls_entropy_init(&entropy);
-//    mbedtls_x509write_crt_init(&x509cert);
-//    mbedtls_x509write_crt_set_md_alg(&x509cert, MBEDTLS_MD_SHA256);
-//    mbedtls_x509write_crt_set_subject_key(&x509cert, &subject_key);
-//    mbedtls_x509write_crt_set_issuer_key(&x509cert, &issuer_key);
-//
-//    if ((buff = malloc(cert_buf_size)) == NULL)
-//        OE_RAISE(OE_OUT_OF_MEMORY);
-//
-//    /* Get the drbg object */
-//    if (!(ctr_drbg = oe_mbedtls_get_drbg()))
-//        OE_RAISE(OE_CRYPTO_ERROR);
-//
-//    // create pk_context for both public and private keys
-//    ret = mbedtls_pk_parse_public_key(
-//        &subject_key,
-//        (const unsigned char*)config->public_key_buf,
-//        config->public_key_buf_size);
-//    if (ret)
-//        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
-//
-//    OE_TRACE_VERBOSE(
-//        "custom_x509_cert: key type:%d", mbedtls_pk_get_type(&subject_key));
-//
-//    ret = mbedtls_pk_parse_key(
-//        &issuer_key,
-//        (const unsigned char*)config->private_key_buf,
-//        config->private_key_buf_size,
-//        NULL,
-//        0);
-//    if (ret)
-//        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
-//
-//    ret = mbedtls_x509write_crt_set_subject_name(
-//        &x509cert, (const char*)config->subject_name);
-//    if (ret)
-//        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
-//
-//    ret = mbedtls_x509write_crt_set_issuer_name(
-//        &x509cert, (const char*)config->issuer_name);
-//
-//    if (ret)
-//        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
-//
-//    ret = mbedtls_mpi_read_string(&serial, 10, "1");
-//    if (ret)
-//        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
-//
-//    ret = mbedtls_x509write_crt_set_serial(&x509cert, &serial);
-//    if (ret)
-//        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
-//
-//    ret = mbedtls_x509write_crt_set_validity(
-//        &x509cert,
-//        (const char*)config->date_not_valid_before,
-//        (const char*)config->date_not_valid_after);
-//    if (ret)
-//        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
-//
-//    // Set the basicConstraints extension for a CRT
-//    ret = mbedtls_x509write_crt_set_basic_constraints(
-//        &x509cert,
-//        0, // is_ca
-//        -1);
-//    if (ret)
-//        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
-//
-//    // Set the subjectKeyIdentifier extension for a CRT Requires that
-//    // mbedtls_x509write_crt_set_subject_key() has been called before
-//    ret = mbedtls_x509write_crt_set_subject_key_identifier(&x509cert);
-//    if (ret)
-//        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
-//
-//    // Set the authorityKeyIdentifier extension for a CRT Requires that
-//    // mbedtls_x509write_crt_set_issuer_key() has been called before.
-//    ret = mbedtls_x509write_crt_set_authority_key_identifier(&x509cert);
-//    if (ret)
-//        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
-//
-//    ret = mbedtls_x509write_crt_set_extension(
-//        &x509cert,
-//        (char*)config->ext_oid,
-//        config->ext_oid_size,
-//        0,
-//        (const uint8_t*)config->ext_data_buf,
-//        config->ext_data_buf_size);
-//    if (ret)
-//        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
-//
-//    // Write a built up certificate to a X509 DER structure Note: data
-//    // is written at the end of the buffer! Use the return value to
-//    // determine where you should start using the buffer.
-//    *bytes_written = (size_t)mbedtls_x509write_crt_der(
-//        &x509cert, buff, cert_buf_size, mbedtls_ctr_drbg_random, ctr_drbg);
-//    if (*bytes_written <= 0)
-//        OE_RAISE_MSG(OE_CRYPTO_ERROR, "bytes_written = 0x%x ", *bytes_written);
-//
-//    OE_CHECK(oe_memcpy_s(
-//        (void*)cert_buf,
-//        cert_buf_size,
-//        (const void*)(buff + cert_buf_size - *bytes_written),
-//        *bytes_written));
-//    OE_TRACE_VERBOSE("bytes_written = 0x%x", *bytes_written);
-//
-//    result = OE_OK;
-//done:
-//    mbedtls_mpi_free(&serial);
-//    mbedtls_x509write_crt_free(&x509cert);
-//    // mbedtls_ctr_drbg_free(&ctr_drbg);
-//    mbedtls_pk_free(&issuer_key);
-//    mbedtls_pk_free(&subject_key);
-//    free(buff);
-//    if (ret)
-//        result = OE_CRYPTO_ERROR;
-//
-//    return result;
-//}
+/* Parse the name string into X509_NAME struct. E.g. name_s = "C=UK,O=ARM,CN=mbed TLS Server 1", split and add each entry into name. */
+int _X509_parse_name(X509_NAME* name, const char* name_s) {
+    char* key = NULL;
+    char* val = NULL;
+    char* name_s_cpy = strdup(name_s);
+
+    if (!name_s_cpy) 
+        return 0;
+
+    key = strsep(&name_s_cpy, "=");
+    while (key != NULL) {
+        val = strsep(&name_s_cpy, ",");
+
+        if (!val)
+            return 0;
+
+        X509_NAME_add_entry_by_txt(name, key,  MBSTRING_ASC, (unsigned char *) val, -1, -1, 0);
+
+        key = strsep(&name_s_cpy, "=");
+    }
+
+    return 1;
+}
+
+/* mbedTLS takes hex (encoded) form of oid for extension creation, but OpenSSL takes strings.
+ * The function decodes the oid in hex format into its string format.*/
+char* _decode_oid_to_str(char* oid, int oid_size) {
+    char byt;
+    char* oid_str;
+    char oid_str_buf[101];
+    char num_str_buf[21];
+    int hi = 0, i = 0;
+    int num = 0;
+
+    // First part
+    byt = oid[hi++];
+    oid_str_buf[i++] = '0' + byt / 40;
+    oid_str_buf[i++] = '.';
+    oid_str_buf[i++] = '0' + byt % 40;
+
+    // Other parts - variable length decoding
+    while (hi < oid_size) {
+        num = 0;
+        byt = oid[hi++] & 0xff;
+        while ((byt & (1 << 8)) >> 8) {     // if highest bit is one, there are following bytes
+            byt = byt & 0b1111111;          // remove highest bit
+            num = (num + byt) << 7;         // add up
+            byt = oid[hi++];
+            if (hi >= oid_size)             // byte encoding incorrect
+                return NULL;
+        }
+        num += byt;
+
+        oid_str_buf[i++] = '.';
+        snprintf(num_str_buf, sizeof(num_str_buf), "%d", num);
+        if (i + strlen(num_str_buf) > 100) // string too long
+            return NULL;
+
+        strcpy(oid_str_buf + i, num_str_buf); 
+        i += strlen(num_str_buf);
+    }
+    oid_str_buf[i] = 0;
+
+    // Copy from buffer
+    oid_str = (char*) malloc((i + 1) * sizeof(char));
+    if (oid_str == NULL) // malloc failed
+        return NULL;
+    strcpy(oid_str, oid_str_buf);
+
+    return oid_str;
+}
+
+oe_result_t oe_gen_custom_x509_cert(
+    oe_cert_config_t* config,
+    unsigned char* cert_buf,
+    size_t cert_buf_size,
+    size_t* bytes_written)
+{
+    oe_result_t result = OE_CRYPTO_ERROR;
+    int ret = 0;
+
+    unsigned char* buff = NULL;
+    unsigned char* p = NULL;
+    X509* x509cert = NULL;
+    BIO* bio = NULL;
+    X509_NAME* name = NULL;
+    EVP_PKEY* subject_issuer_key_pair = NULL;
+    X509_EXTENSION* ex = NULL;
+    ASN1_OBJECT* obj = NULL;
+    ASN1_OCTET_STRING* data = NULL;
+    char* str = NULL;
+    char* txt = NULL;
+    char date_str[16];
+
+    x509cert = X509_new();
+    subject_issuer_key_pair = EVP_PKEY_new();
+
+    // Allocate buffer for certificate
+    if ((buff = malloc(cert_buf_size)) == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    /* Set certificate info */
+
+    // Parse public key
+    bio = BIO_new_mem_buf((const void*) config->public_key_buf, config->public_key_buf_size);
+    if (bio == NULL)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "bio = NULL");
+
+    if (!PEM_read_bio_PUBKEY(bio, &subject_issuer_key_pair, NULL, NULL))
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "subject_key read failed");
+
+    OE_TRACE_VERBOSE(
+        "custom_x509_cert: key type:%d", EVP_PKEY_base_id(subject_issuer_key_pair));
+
+    BIO_free(bio);
+    bio = NULL;
+
+    // Parse private key
+    bio = BIO_new_mem_buf((const void*) config->private_key_buf, config->private_key_buf_size);
+    if (bio == NULL)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "bio = NULL");
+
+    if (!PEM_read_bio_PrivateKey(bio, &subject_issuer_key_pair, NULL, NULL))
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "issuer_key read failed");
+ 
+    BIO_free(bio);
+    bio = NULL;
+
+    // Set key
+    ret = X509_set_pubkey(x509cert, subject_issuer_key_pair);
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "set pubkey failed");
+
+    // Set subject name
+    name = X509_get_subject_name(x509cert);
+    ret = _X509_parse_name(name, (const char*) config->subject_name);
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "set subject name failed");
+
+    // Set issuer name
+    name = X509_get_issuer_name(x509cert);
+    ret = _X509_parse_name(name, (const char*) config->issuer_name);
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "set issuer name failed");
+
+    // Set serial number
+    ret = ASN1_INTEGER_set(X509_get_serialNumber(x509cert), 1);
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "set serial number failed");
+
+    // Set vadility date
+    strcpy(date_str, config->date_not_valid_before);
+    strcat(date_str, "Z");
+    ret = ASN1_TIME_set_string(X509_getm_notBefore(x509cert), date_str);
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "set validity date not before failed");
+
+    strcpy(date_str, config->date_not_valid_after);
+    strcat(date_str, "Z");
+    ret = ASN1_TIME_set_string(X509_getm_notAfter(x509cert), date_str);
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "set validity date not after failed");
+
+    /* Set extensions */
+    data = ASN1_OCTET_STRING_new();
+
+    // Set basic constraints
+    str = "CA:FALSE";
+    ret = ASN1_OCTET_STRING_set(data, str, strlen(str));
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "set octet string (%s) failed", str);
+
+    if (!X509_EXTENSION_create_by_NID(&ex, NID_basic_constraints, 0, data))
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "create basic constraint extension failed");
+
+    ret = X509_add_ext(x509cert, ex, -1);
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "add basic constraint extension failed");
+
+    // SKI & AKI are not needed when CA = false
+    // The implementation below is half completed, need to replace the `str` values
+    /*
+    // Set subject key identifier
+    str = "hash";
+    ret = ASN1_OCTET_STRING_set(data, str, strlen(str));
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "set octet string (%s) failed", str);
+
+    if (!X509_EXTENSION_create_by_NID(&ex, NID_subject_key_identifier, 0, data))
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "create SKI extension failed");
+
+    ret = X509_add_ext(x509cert, ex, -1);
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "add SKI extension failed");
+
+    // Set authority key identifier
+    str = "keyid";
+    ret = ASN1_OCTET_STRING_set(data, str, strlen(str));
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "set octet string (%s) failed", str);
+
+    if (!X509_EXTENSION_create_by_NID(&ex, NID_authority_key_identifier, 0, data))
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "create AKI extension failed");
+
+    ret = X509_add_ext(x509cert, ex, -1);
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "add AKI extension failed");
+    */
+
+    // Set custom extension
+    ret = ASN1_OCTET_STRING_set(data, (char*) config->ext_data_buf, config->ext_data_buf_size);
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "set octet string failed");
+
+    txt = _decode_oid_to_str((char*) config->ext_oid, config->ext_oid_size);
+    if (!txt) {
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "decode oid failed");
+    }
+
+    obj = OBJ_txt2obj(txt, 1);
+    if (!obj)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "create custom extension obj failed");
+
+    if (!X509_EXTENSION_create_by_OBJ(&ex, obj, 0, data))
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "create custom extension failed");
+
+    ret = X509_add_ext(x509cert, ex, -1);
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "add custom extension failed");
+
+    /* Write certificate data */
+
+    // Sign the certificate
+    if (!X509_sign(x509cert, subject_issuer_key_pair, EVP_sha256()))
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "sign cert failed");
+
+    // Write to DER
+    // The use of temporary variable is mandatory.
+    // If p is not NULL is writes the DER encoded data to the buffer at *p, and increments it to point after the data just written.
+    p = buff;
+    *bytes_written = (size_t) i2d_X509(x509cert, &p);
+    if (*bytes_written <= 0)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "bytes_written = 0x%x ", (unsigned int) *bytes_written);
+
+    // Copy DER data to buffer
+    OE_CHECK(oe_memcpy_s(
+        (void*) cert_buf,
+        cert_buf_size,
+        (const void*) buff,
+        *bytes_written));
+    OE_TRACE_VERBOSE("bytes_written = 0x%x", (unsigned int) *bytes_written);
+
+    result = OE_OK;
+done:
+    X509_free(x509cert);
+    X509_EXTENSION_free(ex);
+    if (bio != NULL)
+        BIO_free(bio);
+    ASN1_OBJECT_free(obj);
+    ASN1_OCTET_STRING_free(data);
+    EVP_PKEY_free(subject_issuer_key_pair);
+    free(buff);
+    if (!txt)
+        free(txt);
+    if (!ret)
+        result = OE_CRYPTO_ERROR;
+
+    return result;
+}
