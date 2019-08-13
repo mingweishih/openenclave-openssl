@@ -1,4 +1,3 @@
-export OECrypto_DIR="/usr/local/lib/OECrypto/cmake"
-export OEOpenSSL_INCLUDE_DIR="/opt/oe-openssl/include"
-export OEOpenSSL_LIB_DIR="/opt/oe-openssl/lib"
+export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/opt/oe-openssl/lib/pkgconfig:/opt/openenclave/share/pkgconfig
+export OECrypto_DIR="/opt/oecrypto/lib/oecrypto/cmake"
 export OpenEnclave_DIR="/opt/openenclave/lib/openenclave/cmake"

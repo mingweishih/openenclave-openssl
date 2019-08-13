@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 enable_testing()
 
+# Select the assembler
 if (UNIX)
     set(OE_ASM ASM)
 elseif (WIN32)
@@ -9,10 +10,12 @@ endif ()
 
 project(OECrypto LANGUAGES C CXX ${OE_ASM})
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+# Read version from "VERSION" file
+file(STRINGS "VERSION" OECrypto_VERSION_WITH_V)
+string(REGEX REPLACE "^v" "" OECrypto_VERSION ${OECrypto_VERSION_WITH_V})
+set(PROJECT_VERSION ${OECrypto_VERSION})
 
-set(OEOpenSSL_INCLUDE_DIR $ENV{OEOpenSSL_INCLUDE_DIR})
-set(OEOpenSSL_LIB_DIR $ENV{OEOpenSSL_LIB_DIR})
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
     # TODO: Right now assume it's Intel+SGX for x86_64 processors

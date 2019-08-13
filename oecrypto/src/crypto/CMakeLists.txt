@@ -14,9 +14,9 @@ add_library(oecrypto STATIC
     rsa.c
     sha.c)
 
-target_include_directories(oecrypto PRIVATE ${OEOpenSSL_INCLUDE_DIR})
-target_link_libraries(oecrypto PUBLIC oecrypto_includes)
-target_link_libraries(oecrypto PUBLIC openenclave::oeenclave openenclave::oelibc -L${OEOpenSSL_LIB_DIR} -lssl -lcrypto)
+target_include_directories(oecrypto PRIVATE ${OEOpenSSL_INCLUDEDIR})
+target_link_libraries(oecrypto PUBLIC oecrypto_includes openenclave::oe_includes)
+target_link_libraries(oecrypto PRIVATE openenclave::oecore openenclave::oelibc ${OEOpenSSL_LDFLAGS})
 
 install(
     TARGETS oecrypto

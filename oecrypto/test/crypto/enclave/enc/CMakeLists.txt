@@ -23,4 +23,3 @@ add_enclave(TARGET cryptoenc UUID f0be7db0-ce7c-4dc4-b8c8-b161f4216225
     ${gen})
 
 target_include_directories(cryptoenc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(cryptoenc openenclave::oelibc)
