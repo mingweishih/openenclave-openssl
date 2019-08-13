@@ -1,7 +1,7 @@
 # Build and Run Tests
 
 ```bash
-$ source cmake/oecryptorc
+$ . cmake/oecryptorc
 
 $ mkdir build && cd build
 $ cmake ..
