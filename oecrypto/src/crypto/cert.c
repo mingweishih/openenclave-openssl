@@ -1092,9 +1092,11 @@ oe_result_t oe_gen_custom_x509_cert(
     X509_EXTENSION* ex = NULL;
     ASN1_OBJECT* obj = NULL;
     ASN1_OCTET_STRING* data = NULL;
-    char* str = NULL;
+    BASIC_CONSTRAINTS* bc = NULL;
+    unsigned char* str = NULL;
     char* txt = NULL;
     char date_str[16];
+    int len = 0;
 
     x509cert = X509_new();
     subject_issuer_key_pair = EVP_PKEY_new();
@@ -1129,6 +1131,11 @@ oe_result_t oe_gen_custom_x509_cert(
  
     BIO_free(bio);
     bio = NULL;
+
+    // Set version
+    ret = X509_set_version(x509cert, 2); // version 3
+    if (!ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "set version failed");
 
     // Set key
     ret = X509_set_pubkey(x509cert, subject_issuer_key_pair);
@@ -1169,8 +1176,15 @@ oe_result_t oe_gen_custom_x509_cert(
     data = ASN1_OCTET_STRING_new();
 
     // Set basic constraints
-    str = "CA:FALSE";
-    ret = ASN1_OCTET_STRING_set(data, str, strlen(str));
+    bc = BASIC_CONSTRAINTS_new();
+    bc->ca = false;
+    bc->pathlen = 0;
+
+    len = i2d_BASIC_CONSTRAINTS(bc, &str);
+    if (len < 0)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "i2d basic constraint failed");
+
+    ret = ASN1_OCTET_STRING_set(data, str, len);
     if (!ret)
         OE_RAISE_MSG(OE_CRYPTO_ERROR, "set octet string (%s) failed", str);
 
@@ -1182,34 +1196,6 @@ oe_result_t oe_gen_custom_x509_cert(
         OE_RAISE_MSG(OE_CRYPTO_ERROR, "add basic constraint extension failed");
 
     // SKI & AKI are not needed when CA = false
-    // The implementation below is half completed, need to replace the `str` values
-    /*
-    // Set subject key identifier
-    str = "hash";
-    ret = ASN1_OCTET_STRING_set(data, str, strlen(str));
-    if (!ret)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "set octet string (%s) failed", str);
-
-    if (!X509_EXTENSION_create_by_NID(&ex, NID_subject_key_identifier, 0, data))
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "create SKI extension failed");
-
-    ret = X509_add_ext(x509cert, ex, -1);
-    if (!ret)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "add SKI extension failed");
-
-    // Set authority key identifier
-    str = "keyid";
-    ret = ASN1_OCTET_STRING_set(data, str, strlen(str));
-    if (!ret)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "set octet string (%s) failed", str);
-
-    if (!X509_EXTENSION_create_by_NID(&ex, NID_authority_key_identifier, 0, data))
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "create AKI extension failed");
-
-    ret = X509_add_ext(x509cert, ex, -1);
-    if (!ret)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "add AKI extension failed");
-    */
 
     // Set custom extension
     ret = ASN1_OCTET_STRING_set(data, (char*) config->ext_data_buf, config->ext_data_buf_size);
@@ -1262,6 +1248,7 @@ done:
         BIO_free(bio);
     ASN1_OBJECT_free(obj);
     ASN1_OCTET_STRING_free(data);
+    BASIC_CONSTRAINTS_free(bc);
     EVP_PKEY_free(subject_issuer_key_pair);
     free(buff);
     if (!txt)
