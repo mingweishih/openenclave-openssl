@@ -1,29 +1,26 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
+#include <openenclave/enclave.h>
+
+#include <arpa/inet.h>
+#include <sys/mount.h>
+#include <sys/syscall.h>
+#include <sys/socket.h>
+#include <sys/uio.h>
 #include <assert.h>
 #include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/mount.h>
-#include <openenclave/enclave.h>
 #include <malloc.h>
 #include <syscall.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/syscall.h>
-#include <sys/uio.h>
 #include <unistd.h>
 #include "openssl_server_t.h"
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <openssl/ssl.h>
-#include <openssl/err.h>
 
 int create_socket(int port)
 {

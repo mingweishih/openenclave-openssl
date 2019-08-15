@@ -1,18 +1,34 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
-#include <fcntl.h>
-#include <limits.h>
 #include <openenclave/host.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/uio.h>
+#include <assert.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include "openssl_server_u.h"
+
+bool check_simulate_opt(int* argc, const char* argv[])
+{
+    for (int i = 0; i < *argc; i++)
+    {
+        if (strcmp(argv[i], "--simulate") == 0)
+        {
+            fprintf(stdout, "Running in simulation mode\n");
+            memmove(&argv[i], &argv[i + 1], (*argc - i) * sizeof(char*));
+            (*argc)--;
+            return true;
+        }
+    }
+    return false;
+}
 
 int main(int argc, const char* argv[])
 {
@@ -30,7 +46,11 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    const uint32_t flags = oe_get_create_flags();
+    uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
+    if (check_simulate_opt(&argc, argv))
+    {
+        flags |= OE_ENCLAVE_FLAG_SIMULATE;
+    }
 
     if ((result = oe_create_openssl_server_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
@@ -39,7 +59,6 @@ int main(int argc, const char* argv[])
         return 1;
     }
     
-
     if ((result = run_server(enclave, cwd)) != OE_OK)
     {
         fprintf(stderr, "sample failed: result=%u", result);
