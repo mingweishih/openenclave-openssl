@@ -6,7 +6,7 @@
 
 #include <openssl/x509.h>
 
-#include <oecrypto/internal/crypto/crl.h>
+#include <openenclave/internal/crypto/crl.h>
 
 typedef struct _crl
 {

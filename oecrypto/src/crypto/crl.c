@@ -5,18 +5,18 @@
 #include <openssl/x509.h>
 
 #include <openenclave/bits/safecrt.h>
-#include <oecrypto/internal/crypto/crl.h>
-#include <oecrypto/internal/defs.h>
-#include <oecrypto/internal/raise.h>
-#include <oecrypto/internal/utils.h>
+#include <openenclave/internal/crypto/crl.h>
+#include <openenclave/internal/defs.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 
 #include <limits.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include "crl.h"
 
-/* Randomly generated magic number */
-#define OE_CRL_MAGIC 0xe8c993b1cca24906
+#include "../magic.h"
+#include "crl.h"
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 /* Needed for compatibility with ssl1.1 */

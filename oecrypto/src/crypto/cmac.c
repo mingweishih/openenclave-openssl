@@ -5,9 +5,9 @@
 #include <openssl/cmac.h>
 
 #include <openenclave/enclave.h>
-#include <oecrypto/internal/crypto/cmac.h>
-#include <oecrypto/internal/raise.h>
-#include <oecrypto/internal/utils.h>
+#include <openenclave/internal/crypto/cmac.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 
 oe_result_t oe_aes_cmac_sign(
     const uint8_t* key,

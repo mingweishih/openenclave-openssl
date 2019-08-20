@@ -5,7 +5,7 @@
 #include <openenclave/enclave.h>
 #endif
 
-#include <oecrypto/internal/tests.h>
+#include <openenclave/internal/tests.h>
 
 #include <stdint.h>
 #include <string.h>

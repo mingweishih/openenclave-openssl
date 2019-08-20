@@ -5,8 +5,8 @@
 #include <openenclave/enclave.h>
 #endif
 
-#include <oecrypto/internal/crypto/hmac.h>
-#include <oecrypto/internal/tests.h>
+#include <openenclave/internal/crypto/hmac.h>
+#include <openenclave/internal/tests.h>
 
 #include <stdio.h>
 #include <string.h>

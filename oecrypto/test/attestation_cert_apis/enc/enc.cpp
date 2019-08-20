@@ -9,9 +9,9 @@
 
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include <oecrypto/internal/raise.h>
-#include <oecrypto/internal/report.h>
-#include <oecrypto/internal/tests.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/report.h>
+#include <openenclave/internal/tests.h>
 
 #include <stdio.h>
 #include <stdlib.h>

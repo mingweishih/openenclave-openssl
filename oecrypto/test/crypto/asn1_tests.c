@@ -5,10 +5,10 @@
 #include <openenclave/enclave.h>
 #endif
 
-#include <oecrypto/internal/asn1.h>
-#include <oecrypto/internal/cert.h>
-#include <oecrypto/internal/hexdump.h>
-#include <oecrypto/internal/tests.h>
+#include <openenclave/internal/asn1.h>
+#include <openenclave/internal/cert.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/tests.h>
 
 #include <stdarg.h>
 #include <stdio.h>

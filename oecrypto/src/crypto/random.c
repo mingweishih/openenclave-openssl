@@ -3,7 +3,7 @@
 
 #include <openssl/rand.h>
 
-#include <oecrypto/internal/random.h>
+#include <openenclave/internal/random.h>
 
 oe_result_t oe_random_internal(void* data, size_t size)
 {

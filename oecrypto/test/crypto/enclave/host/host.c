@@ -5,8 +5,8 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <openenclave/host.h>
-#include <oecrypto/internal/error.h>
-#include <oecrypto/internal/tests.h>
+#include <openenclave/internal/error.h>
+#include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

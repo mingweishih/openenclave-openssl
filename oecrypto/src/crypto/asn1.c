@@ -5,13 +5,13 @@
 #include <openssl/pem.h>
 
 #include <openenclave/bits/safecrt.h>
-#include <oecrypto/internal/asn1.h>
-#include <oecrypto/internal/defs.h>
-#include <oecrypto/internal/raise.h>
-#include <oecrypto/internal/utils.h>
+#include <openenclave/internal/asn1.h>
+#include <openenclave/internal/defs.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 
 #include <string.h>
-#include "../common/asn1.h"
+#include "../../../openenclave/common/asn1.h"
 
 OE_STATIC_ASSERT(V_ASN1_CONSTRUCTED == OE_ASN1_TAG_CONSTRUCTED);
 OE_STATIC_ASSERT(V_ASN1_SEQUENCE == OE_ASN1_TAG_SEQUENCE);

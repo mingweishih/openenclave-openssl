@@ -4,9 +4,9 @@
 #include <openssl/sha.h>
 
 #include <openenclave/host.h>
-#include <oecrypto/internal/crypto/sha.h>
-#include <oecrypto/internal/defs.h>
-#include <oecrypto/internal/raise.h>
+#include <openenclave/internal/crypto/sha.h>
+#include <openenclave/internal/defs.h>
+#include <openenclave/internal/raise.h>
 
 #include <stdio.h>
 #include <string.h>

@@ -3,9 +3,9 @@
 
 #include <openssl/hmac.h>
 
-#include <oecrypto/internal/crypto/hmac.h>
-#include <oecrypto/internal/defs.h>
-#include <oecrypto/internal/raise.h>
+#include <openenclave/internal/crypto/hmac.h>
+#include <openenclave/internal/defs.h>
+#include <openenclave/internal/raise.h>
 
 typedef struct _oe_hmac_sha256_context_impl
 {

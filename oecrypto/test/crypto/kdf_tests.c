@@ -5,8 +5,8 @@
 #include <openenclave/enclave.h>
 #endif
 
-#include <oecrypto/internal/kdf.h>
-#include <oecrypto/internal/tests.h>
+#include <openenclave/internal/kdf.h>
+#include <openenclave/internal/tests.h>
 
 #include <stdio.h>
 #include <stdlib.h>

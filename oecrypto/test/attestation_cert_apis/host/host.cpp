@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
-#include <oecrypto/internal/error.h>
-#include <oecrypto/internal/raise.h>
-#include <oecrypto/internal/tests.h>
+#include <openenclave/internal/error.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/tests.h>
 
 #include <limits.h>
 #include <stdio.h>

@@ -5,7 +5,7 @@
 #define _READFILE_H_
 
 #include <openenclave/bits/result.h>
-#include <oecrypto/internal/datetime.h>
+#include <openenclave/internal/datetime.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

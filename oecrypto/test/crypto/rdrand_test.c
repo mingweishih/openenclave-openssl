@@ -4,8 +4,8 @@
 #define MAX_LOOP_SIZE 100000000
 
 #include <openenclave/enclave.h>
-#include <oecrypto/internal/rdrand.h>
-#include <oecrypto/internal/tests.h>
+#include <openenclave/internal/rdrand.h>
+#include <openenclave/internal/tests.h>
 
 #include <stdint.h>
 #include <stdio.h>

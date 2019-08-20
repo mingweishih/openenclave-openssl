@@ -4,7 +4,7 @@
 # OS-specific source files
 if (UNIX)
   set(PLATFORM_SRC
-    ../../../common/sgx/rand.S
+    ${OE_SRC_DIR}/common/sgx/rand.S
     ../asn1_tests.c
     ../crl_tests.c
     ../ec_tests.c
@@ -13,7 +13,7 @@ if (UNIX)
 )
 elseif (WIN32)
   set(PLATFORM_SRC
-    ../../../common/sgx/rand.asm)
+    ${OE_SRC_DIR}/common/sgx/rand.asm)
 else()
   message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
 endif()
@@ -31,5 +31,6 @@ add_executable(hostcrypto
     ../utils.c)
 
 add_dependencies(hostcrypto crypto_test_data)
-target_link_libraries(hostcrypto oecrypto_includes openenclave::oehost)
+target_include_directories(hostcrypto PRIVATE ${OE_INTERNAL_INCLUDEDIR})
+target_link_libraries(hostcrypto openenclave::oehost)
 add_test(tests/crypto/host hostcrypto)

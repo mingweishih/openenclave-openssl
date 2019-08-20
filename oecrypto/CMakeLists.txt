@@ -90,8 +90,8 @@ endif ()
 
 include(package_settings)
 
-find_package(OpenEnclave CONFIG REQUIRED)
+set(OE_SRC_DIR ${CMAKE_SOURCE_DIR}/../openenclave)
+set(OE_INTERNAL_INCLUDEDIR ${OE_SRC_DIR}/include)
 
 add_subdirectory(src)
-add_subdirectory(include)
 add_subdirectory(test)

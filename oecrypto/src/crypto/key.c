@@ -6,8 +6,8 @@
 #include <openssl/pem.h>
 
 #include <openenclave/bits/safecrt.h>
-#include <oecrypto/internal/raise.h>
-#include <oecrypto/internal/utils.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 
 #include <string.h>
 #include "key.h"

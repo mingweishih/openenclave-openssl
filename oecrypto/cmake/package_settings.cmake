@@ -7,6 +7,7 @@ include(CMakePackageConfigHelpers)
 find_package(PkgConfig)
 
 pkg_check_modules(OEOpenSSL openssl_oe_enclave)
+find_package(OpenEnclave CONFIG REQUIRED)
 
 # Generate CMake config files
 

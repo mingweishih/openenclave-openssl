@@ -3,17 +3,17 @@
 
 #include <assert.h>
 #include <fcntl.h>
-#include <oecrypto/corelibc/string.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
-#include <oecrypto/internal/cert.h>
-#include <oecrypto/internal/crypto/sha.h>
-#include <oecrypto/internal/ec.h>
-#include <oecrypto/internal/hexdump.h>
-#include <oecrypto/internal/malloc.h>
-#include <oecrypto/internal/raise.h>
-#include <oecrypto/internal/rsa.h>
-#include <oecrypto/internal/syscall.h>
-#include <oecrypto/internal/tests.h>
+#include <openenclave/internal/cert.h>
+#include <openenclave/internal/crypto/sha.h>
+#include <openenclave/internal/ec.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/malloc.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/rsa.h>
+#include <openenclave/internal/syscall.h>
+#include <openenclave/internal/tests.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>

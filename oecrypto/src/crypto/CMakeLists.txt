@@ -1,7 +1,7 @@
 add_library(oecrypto STATIC
-    ../../common/asn1.c
-    ../../common/cert.c
-    ../../common/kdf.c
+    ${OE_SRC_DIR}/common/asn1.c
+    ${OE_SRC_DIR}/common/cert.c
+    ${OE_SRC_DIR}/common/kdf.c
     asn1.c
     cert.c
     cmac.c
@@ -14,8 +14,8 @@ add_library(oecrypto STATIC
     rsa.c
     sha.c)
 
-target_include_directories(oecrypto PRIVATE ${OEOpenSSL_INCLUDEDIR})
-target_link_libraries(oecrypto PUBLIC oecrypto_includes openenclave::oe_includes)
+target_include_directories(oecrypto PRIVATE ${OEOpenSSL_INCLUDEDIR} ${OE_INTERNAL_INCLUDEDIR})
+target_link_libraries(oecrypto PUBLIC openenclave::oe_includes)
 target_link_libraries(oecrypto PRIVATE openenclave::oecore openenclave::oelibc ${OEOpenSSL_LDFLAGS})
 
 install(
