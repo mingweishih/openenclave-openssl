@@ -100,7 +100,7 @@ $ ./server/host/tls_server_host ./server/enc/tls_server_enc.signed -port:12341
 Enclave client app:
 
 ```bash
-$ ./client/host/tls_client_host ../client/enc/tls_client_enc.signed -server:localhost -port:12341
+$ ./client/host/tls_client_host ./client/enc/tls_client_enc.signed -server:localhost -port:12341
 ```
 
 Non-enclave client app:
