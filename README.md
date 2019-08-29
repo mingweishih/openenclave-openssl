@@ -58,7 +58,7 @@ $ sudo make install
 ## Build the sample
 
 ```bash
-$ . /opt/oecrypto/share/oecrypto/openenclaverc
+$ . /opt/oecrypto/share/oecrypto/oecryptorc
 ```
 
 #### `openssl_server`
