@@ -3,7 +3,6 @@
 
 #include <openssl/sha.h>
 
-#include <openenclave/host.h>
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>

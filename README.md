@@ -50,7 +50,9 @@ $ sudo make install
 > ## Test OECrypto
 >
 > ```bash
-> $ sudo ctest
+> $ cmake .. -DTEST_CRYPTO=ON
+> $ make
+> $ ctest
 > ```
 
 ## Build the sample

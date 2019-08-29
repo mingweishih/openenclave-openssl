@@ -11,8 +11,7 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/safecrt.h>
-#include <openenclave/internal/asn1.h>
-#include <openenclave/internal/cert.h>
+#include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
@@ -21,8 +20,8 @@
 #include <string.h>
 #include "../magic.h"
 #include "crl.h"
-#include "ec.h"
 #include "init.h"
+#include "ec.h"
 #include "rsa.h"
 
 /*
@@ -201,28 +200,6 @@ done:
 
     return ret;
 }
-
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-/* Needed because some versions of OpenSSL do not support X509_up_ref() */
-static int X509_up_ref(X509* x509)
-{
-    if (!x509)
-        return 0;
-
-    CRYPTO_add(&x509->references, 1, CRYPTO_LOCK_X509);
-    return 1;
-}
-
-static const STACK_OF(X509_EXTENSION) * X509_get0_extensions(const X509* x)
-{
-    if (!x->cert_info)
-    {
-        return NULL;
-    }
-    return x->cert_info->extensions;
-}
-
-#endif
 
 static oe_result_t _cert_chain_get_length(const cert_chain_t* impl, int* length)
 {

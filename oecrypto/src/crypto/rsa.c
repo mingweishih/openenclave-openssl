@@ -3,67 +3,44 @@
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>
-
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/rsa.h>
-#include <openenclave/internal/utils.h>
-
-#include "../magic.h"
-#include "../rsa.h"
-#include "init.h"
 #include "key.h"
 #include "rsa.h"
+#include "../magic.h"
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-/* Needed for compatibility with ssl1.1 */
-
-static void RSA_get0_key(
-    const RSA* r,
-    const BIGNUM** n,
-    const BIGNUM** e,
-    const BIGNUM** d)
-{
-    if (n != NULL)
-        *n = r->n;
-    if (e != NULL)
-        *e = r->e;
-    if (d != NULL)
-        *d = r->d;
-}
-
-static int RSA_set0_key(RSA* r, BIGNUM* n, BIGNUM* e, BIGNUM* d)
-{
-    /* If the fields n and e in r are NULL, the corresponding input
-     * parameters MUST be non-NULL for n and e.  d may be
-     * left NULL (in case only the public key is used).
-     */
-    if ((r->n == NULL && n == NULL) || (r->e == NULL && e == NULL))
-        return 0;
-
-    if (n != NULL)
-    {
-        BN_free(r->n);
-        r->n = n;
-    }
-    if (e != NULL)
-    {
-        BN_free(r->e);
-        r->e = e;
-    }
-    if (d != NULL)
-    {
-        BN_free(r->d);
-        r->d = d;
-    }
-
-    return 1;
-}
-
+#ifdef TEST_CRYPTO
+#include <openenclave/internal/rsa.h>
+#include <openenclave/internal/utils.h>
 #endif
 
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_rsa_public_key_t));
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_rsa_private_key_t));
 
+void oe_rsa_public_key_init(oe_rsa_public_key_t* public_key, EVP_PKEY* pkey)
+{
+    oe_public_key_init(
+        (oe_public_key_t*)public_key, pkey, OE_RSA_PUBLIC_KEY_MAGIC);
+}
+
+oe_result_t oe_rsa_public_key_write_pem(
+    const oe_rsa_public_key_t* public_key,
+    uint8_t* pem_data,
+    size_t* pem_size)
+{
+    return oe_public_key_write_pem(
+        (const oe_public_key_t*)public_key,
+        pem_data,
+        pem_size,
+        OE_RSA_PUBLIC_KEY_MAGIC);
+}
+
+oe_result_t oe_rsa_public_key_free(oe_rsa_public_key_t* public_key)
+{
+    return oe_public_key_free(
+        (oe_public_key_t*)public_key, OE_RSA_PUBLIC_KEY_MAGIC);
+}
+
+#ifdef TEST_CRYPTO
 static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -213,12 +190,6 @@ done:
     return result;
 }
 
-void oe_rsa_public_key_init(oe_rsa_public_key_t* public_key, EVP_PKEY* pkey)
-{
-    oe_public_key_init(
-        (oe_public_key_t*)public_key, pkey, OE_RSA_PUBLIC_KEY_MAGIC);
-}
-
 oe_result_t oe_rsa_private_key_read_pem(
     oe_rsa_private_key_t* private_key,
     const uint8_t* pem_data,
@@ -258,28 +229,10 @@ oe_result_t oe_rsa_public_key_read_pem(
         OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
-oe_result_t oe_rsa_public_key_write_pem(
-    const oe_rsa_public_key_t* public_key,
-    uint8_t* pem_data,
-    size_t* pem_size)
-{
-    return oe_public_key_write_pem(
-        (const oe_public_key_t*)public_key,
-        pem_data,
-        pem_size,
-        OE_RSA_PUBLIC_KEY_MAGIC);
-}
-
 oe_result_t oe_rsa_private_key_free(oe_rsa_private_key_t* private_key)
 {
     return oe_private_key_free(
         (oe_private_key_t*)private_key, OE_RSA_PRIVATE_KEY_MAGIC);
-}
-
-oe_result_t oe_rsa_public_key_free(oe_rsa_public_key_t* public_key)
-{
-    return oe_public_key_free(
-        (oe_public_key_t*)public_key, OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_sign(
@@ -344,71 +297,4 @@ oe_result_t oe_rsa_public_key_equal(
     return _public_key_equal(
         (oe_public_key_t*)public_key1, (oe_public_key_t*)public_key2, equal);
 }
-
-oe_result_t oe_rsa_get_public_key_from_private(
-    const oe_rsa_private_key_t* private_key,
-    oe_rsa_public_key_t* public_key)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_private_key_t* private_key_temp = (oe_private_key_t*)private_key;
-    RSA* rsa_private = NULL;
-    RSA* rsa_public = NULL;
-    EVP_PKEY* rsa_public_pkey = NULL;
-    const BIGNUM* private_e = NULL;
-    const BIGNUM* private_n = NULL;
-    const BIGNUM* public_e = NULL;
-    const BIGNUM* public_n = NULL;
-
-    /* Check for invalid parameters */
-    if (!private_key || !public_key)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Get RSA private key */
-    if (!(rsa_private = EVP_PKEY_get1_RSA(private_key_temp->pkey)))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    RSA_get0_key(rsa_private, &private_e, &private_n, NULL);
-
-    /* Check if it's possible to get the public key. */
-    if (!private_e || !private_n)
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    /* Create RSA public key. */
-    if (!(rsa_public = RSA_new()))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    RSA_get0_key(rsa_private, &public_e, &public_n, NULL);
-
-    if (!public_e)
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    if (!public_n)
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    if (!RSA_set0_key(rsa_public, BN_dup(public_e), BN_dup(public_n), NULL))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    /* Init the OE public key type. */
-    if (!(rsa_public_pkey = EVP_PKEY_new()))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    if (EVP_PKEY_set1_RSA(rsa_public_pkey, rsa_public) == 0)
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    oe_rsa_public_key_init(public_key, rsa_public_pkey);
-
-    result = OE_OK;
-    rsa_public_pkey = NULL;
-
-done:
-    if (rsa_public_pkey)
-        EVP_PKEY_free(rsa_public_pkey);
-
-    if (rsa_public)
-        RSA_free(rsa_public);
-
-    if (rsa_private)
-        RSA_free(rsa_private);
-
-    return result;
-}
+#endif

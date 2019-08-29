@@ -2,16 +2,17 @@
 // Licensed under the MIT License.
 
 #include <openssl/asn1.h>
-#include <openssl/pem.h>
-
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/internal/asn1.h>
-#include <openenclave/internal/defs.h>
+#include <openenclave/internal/crypto/asn1.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/utils.h>
-
+#include <openenclave/internal/defs.h>
 #include <string.h>
 #include "../../../openenclave/common/asn1.h"
+
+#ifdef TEST_CRYPTO
+#include <openssl/pem.h>
+#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/utils.h>
+#endif
 
 OE_STATIC_ASSERT(V_ASN1_CONSTRUCTED == OE_ASN1_TAG_CONSTRUCTED);
 OE_STATIC_ASSERT(V_ASN1_SEQUENCE == OE_ASN1_TAG_SEQUENCE);
@@ -90,6 +91,7 @@ done:
     return result;
 }
 
+#ifdef TEST_CRYPTO
 oe_result_t oe_asn1_get_integer(oe_asn1_t* asn1, int* value)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -181,3 +183,4 @@ oe_result_t oe_asn1_get_octet_string(
 done:
     return result;
 }
+#endif

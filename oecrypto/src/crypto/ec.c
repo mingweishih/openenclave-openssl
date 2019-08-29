@@ -4,6 +4,7 @@
 #include <openssl/obj_mac.h>
 #include <openssl/pem.h>
 
+#include <openenclave/internal/crypto/ec.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 
@@ -11,20 +12,6 @@
 #include "ec.h"
 #include "init.h"
 #include "key.h"
-
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-/* Needed for compatibility with ssl1.1 */
-static int ECDSA_SIG_set0(ECDSA_SIG* sig, BIGNUM* r, BIGNUM* s)
-{
-    if (r == NULL || s == NULL)
-        return 0;
-    BN_clear_free(sig->r);
-    BN_clear_free(sig->s);
-    sig->r = r;
-    sig->s = s;
-    return 1;
-}
-#endif
 
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_ec_public_key_t));
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_ec_private_key_t));
@@ -122,19 +109,6 @@ void oe_ec_private_key_init(oe_ec_private_key_t* private_key, EVP_PKEY* pkey)
         (oe_private_key_t*)private_key, pkey, OE_RSA_PRIVATE_KEY_MAGIC);
 }
 
-oe_result_t oe_ec_private_key_read_pem(
-    oe_ec_private_key_t* private_key,
-    const uint8_t* pem_data,
-    size_t pem_size)
-{
-    return oe_private_key_read_pem(
-        pem_data,
-        pem_size,
-        (oe_private_key_t*)private_key,
-        EVP_PKEY_EC,
-        OE_RSA_PRIVATE_KEY_MAGIC);
-}
-
 oe_result_t oe_ec_private_key_write_pem(
     const oe_ec_private_key_t* private_key,
     uint8_t* pem_data,
@@ -183,24 +157,6 @@ oe_result_t oe_ec_public_key_free(oe_ec_public_key_t* public_key)
 {
     return oe_public_key_free(
         (oe_public_key_t*)public_key, OE_RSA_PUBLIC_KEY_MAGIC);
-}
-
-oe_result_t oe_ec_private_key_sign(
-    const oe_ec_private_key_t* private_key,
-    oe_hash_type_t hash_type,
-    const void* hash_data,
-    size_t hash_size,
-    uint8_t* signature,
-    size_t* signature_size)
-{
-    return oe_private_key_sign(
-        (oe_private_key_t*)private_key,
-        hash_type,
-        hash_data,
-        hash_size,
-        signature,
-        signature_size,
-        OE_RSA_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_public_key_verify(
@@ -556,3 +512,36 @@ done:
         BN_clear_free(order);
     return is_valid;
 }
+
+#ifdef TEST_CRYPTO
+oe_result_t oe_ec_private_key_sign(
+    const oe_ec_private_key_t* private_key,
+    oe_hash_type_t hash_type,
+    const void* hash_data,
+    size_t hash_size,
+    uint8_t* signature,
+    size_t* signature_size)
+{
+    return oe_private_key_sign(
+        (oe_private_key_t*)private_key,
+        hash_type,
+        hash_data,
+        hash_size,
+        signature,
+        signature_size,
+        OE_RSA_PRIVATE_KEY_MAGIC);
+}
+
+oe_result_t oe_ec_private_key_read_pem(
+    oe_ec_private_key_t* private_key,
+    const uint8_t* pem_data,
+    size_t pem_size)
+{
+    return oe_private_key_read_pem(
+        pem_data,
+        pem_size,
+        (oe_private_key_t*)private_key,
+        EVP_PKEY_EC,
+        OE_RSA_PRIVATE_KEY_MAGIC);
+}
+#endif

@@ -43,63 +43,6 @@ void oe_private_key_init(
     impl->pkey = pkey;
 }
 
-oe_result_t oe_private_key_read_pem(
-    const uint8_t* pem_data,
-    size_t pem_size,
-    oe_private_key_t* key,
-    int key_type,
-    uint64_t magic)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_private_key_t* impl = (oe_private_key_t*)key;
-    BIO* bio = NULL;
-    EVP_PKEY* pkey = NULL;
-
-    /* Initialize the key output parameter */
-    if (impl)
-        oe_secure_zero_fill(impl, sizeof(oe_private_key_t));
-
-    /* Check parameters */
-    if (!pem_data || !pem_size || pem_size > OE_INT_MAX || !impl)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Must have pem_size-1 non-zero characters followed by zero-terminator */
-    if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize OpenSSL */
-    oe_initialize_openssl();
-
-    /* Create a BIO object for reading the PEM data */
-    if (!(bio = BIO_new_mem_buf(pem_data, (int)pem_size)))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    /* Read the key object */
-    if (!(pkey = PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL)))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    /* Verify that it is the right key type */
-    if (EVP_PKEY_id(pkey) != key_type)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize the key */
-    impl->magic = magic;
-    impl->pkey = pkey;
-    pkey = NULL;
-
-    result = OE_OK;
-
-done:
-
-    if (pkey)
-        EVP_PKEY_free(pkey);
-
-    if (bio)
-        BIO_free(bio);
-
-    return result;
-}
-
 oe_result_t oe_public_key_read_pem(
     const uint8_t* pem_data,
     size_t pem_size,
@@ -329,6 +272,64 @@ done:
     return result;
 }
 
+#ifdef TEST_CRYPTO
+oe_result_t oe_private_key_read_pem(
+    const uint8_t* pem_data,
+    size_t pem_size,
+    oe_private_key_t* key,
+    int key_type,
+    uint64_t magic)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_private_key_t* impl = (oe_private_key_t*)key;
+    BIO* bio = NULL;
+    EVP_PKEY* pkey = NULL;
+
+    /* Initialize the key output parameter */
+    if (impl)
+        oe_secure_zero_fill(impl, sizeof(oe_private_key_t));
+
+    /* Check parameters */
+    if (!pem_data || !pem_size || pem_size > OE_INT_MAX || !impl)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Must have pem_size-1 non-zero characters followed by zero-terminator */
+    if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Initialize OpenSSL */
+    oe_initialize_openssl();
+
+    /* Create a BIO object for reading the PEM data */
+    if (!(bio = BIO_new_mem_buf(pem_data, (int)pem_size)))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    /* Read the key object */
+    if (!(pkey = PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL)))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    /* Verify that it is the right key type */
+    if (EVP_PKEY_id(pkey) != key_type)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Initialize the key */
+    impl->magic = magic;
+    impl->pkey = pkey;
+    pkey = NULL;
+
+    result = OE_OK;
+
+done:
+
+    if (pkey)
+        EVP_PKEY_free(pkey);
+
+    if (bio)
+        BIO_free(bio);
+
+    return result;
+}
+
 oe_result_t oe_private_key_sign(
     const oe_private_key_t* private_key,
     oe_hash_type_t hash_type,
@@ -400,6 +401,7 @@ done:
 
     return result;
 }
+#endif
 
 oe_result_t oe_public_key_verify(
     const oe_public_key_t* public_key,

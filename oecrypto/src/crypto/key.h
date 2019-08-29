@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _HOST_KEY_H
-#define _HOST_KEY_H
+#ifndef _ENCLAVE_KEY_H
+#define _ENCLAVE_KEY_H
 
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 
+#include <openenclave/internal/crypto/hash.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/crypto/hash.h>
 
 typedef struct oe_private_key_t
 {
@@ -40,12 +40,14 @@ void oe_private_key_init(
     EVP_PKEY* pkey,
     uint64_t magic);
 
+#ifdef TEST_CRYPTO
 oe_result_t oe_private_key_read_pem(
     const uint8_t* pem_data,
     size_t pem_size,
     oe_private_key_t* key,
     int key_type,
     uint64_t magic);
+#endif
 
 oe_result_t oe_public_key_read_pem(
     const uint8_t* pem_data,
@@ -71,6 +73,7 @@ oe_result_t oe_private_key_free(oe_private_key_t* key, uint64_t magic);
 
 oe_result_t oe_public_key_free(oe_public_key_t* key, uint64_t magic);
 
+#ifdef TEST_CRYPTO
 oe_result_t oe_private_key_sign(
     const oe_private_key_t* private_key,
     oe_hash_type_t hash_type,
@@ -79,6 +82,7 @@ oe_result_t oe_private_key_sign(
     uint8_t* signature,
     size_t* signature_size,
     uint64_t magic);
+#endif
 
 oe_result_t oe_public_key_verify(
     const oe_public_key_t* public_key,
@@ -89,4 +93,4 @@ oe_result_t oe_public_key_verify(
     size_t signature_size,
     uint64_t magic);
 
-#endif /* _HOST_KEY_H */
+#endif /* _ENCLAVE_KEY_H */
