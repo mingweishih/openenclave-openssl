@@ -115,8 +115,8 @@ Contributing
 
 This project welcomes contributions and suggestions. All contributions to the Open Enclave SDK
 must adhere to the terms of the [Developer Certificate of Origin (DCO)](https://developercertificate.org/).
-For details, see [Contributing to Open Enclave](https://github.com/openenclave/openenclave/docs/Contributing.md).
+For details, see [Contributing to Open Enclave](https://github.com/openenclave/openenclave/blob/master/docs/Contributing.md).
 
-This project follows a [Code of Conduct](https://github.com/openenclave/openenclave/docs/CodeOfConduct.md) adapted from the
+This project follows a [Code of Conduct](https://github.com/openenclave/openenclave/blob/master/docs/CodeOfConduct.md) adapted from the
 [Contributor Covenant v1.4](https://www.contributor-covenant.org).
 
