@@ -113,7 +113,7 @@ $ ./non_enc_client/tls_non_enc_client -server:localhost -port:12341
 Contributing
 ------------
 
-This project welcomes contributions and suggestions. All contributions to the Open Enclave SDK
+This project welcomes contributions and suggestions. All contributions to this project
 must adhere to the terms of the [Developer Certificate of Origin (DCO)](https://developercertificate.org/).
 For details, see [Contributing to Open Enclave](https://github.com/openenclave/openenclave/blob/master/docs/Contributing.md).
 
