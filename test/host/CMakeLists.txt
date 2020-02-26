@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/enc")
